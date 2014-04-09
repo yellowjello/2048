@@ -1,4 +1,4 @@
-function KeyboardInputManager() {
+function KVInputManager() {
   this.events = {};
 
   if (window.navigator.msPointerEnabled) {
@@ -15,14 +15,14 @@ function KeyboardInputManager() {
   this.listen();
 }
 
-KeyboardInputManager.prototype.on = function (event, callback) {
+KVInputManager.prototype.on = function (event, callback) {
   if (!this.events[event]) {
     this.events[event] = [];
   }
   this.events[event].push(callback);
 };
 
-KeyboardInputManager.prototype.emit = function (event, data) {
+KVInputManager.prototype.emit = function (event, data) {
   var callbacks = this.events[event];
   if (callbacks) {
     callbacks.forEach(function (callback) {
@@ -31,7 +31,7 @@ KeyboardInputManager.prototype.emit = function (event, data) {
   }
 };
 
-KeyboardInputManager.prototype.listen = function () {
+KVInputManager.prototype.listen = function () {
   var self = this;
 
   var map = {
@@ -67,6 +67,33 @@ KeyboardInputManager.prototype.listen = function () {
       self.restart.call(self, event);
     }
   });
+
+  // Voice inputz
+  window.onload = function () {
+    if (annyang) {
+      // Let's define our first command. First the text we expect, and then the function it should call
+      var commands = {
+        'up': function() {
+          self.emit("move", 0);
+        },
+        'right': function() {
+          self.emit("move", 1);
+        },
+        'down': function() {
+          self.emit("move", 2);
+        },
+        'left': function() {
+          self.emit("move", 3);
+        }
+      };
+
+      // Add our commands to annyang
+      annyang.addCommands(commands);
+
+      // Start listening. You can call this here, or attach this call to an event, button, etc.
+      annyang.start();
+    }
+  }
 
   // Respond to button presses
   this.bindButtonPress(".retry-button", this.restart);
@@ -127,17 +154,17 @@ KeyboardInputManager.prototype.listen = function () {
   });
 };
 
-KeyboardInputManager.prototype.restart = function (event) {
+KVInputManager.prototype.restart = function (event) {
   event.preventDefault();
   this.emit("restart");
 };
 
-KeyboardInputManager.prototype.keepPlaying = function (event) {
+KVInputManager.prototype.keepPlaying = function (event) {
   event.preventDefault();
   this.emit("keepPlaying");
 };
 
-KeyboardInputManager.prototype.bindButtonPress = function (selector, fn) {
+KVInputManager.prototype.bindButtonPress = function (selector, fn) {
   var button = document.querySelector(selector);
   button.addEventListener("click", fn.bind(this));
   button.addEventListener(this.eventTouchend, fn.bind(this));
